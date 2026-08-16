@@ -6,7 +6,7 @@ import { Reveal } from "@/components/Reveal";
 export const metadata: Metadata = {
   title: "FAQ",
   description:
-    "Perguntas frequentes sobre tranças, cuidados, agendamento e pagamento no MyStyle.",
+    "Frequently asked questions about braids, care, booking, and payment at MyStyle.",
 };
 
 export default function FaqPage() {
@@ -15,12 +15,12 @@ export default function FaqPage() {
       <section className="section-pad">
         <div className="container-page max-w-3xl">
           <Reveal>
-            <p className="eyebrow">Dúvidas</p>
+            <p className="eyebrow">Questions</p>
             <h1 className="font-display mt-3 text-5xl font-bold tracking-tight sm:text-6xl">
-              Perguntas frequentes
+              Frequently asked questions
             </h1>
             <p className="mt-5 text-lg leading-relaxed text-muted">
-              Tudo o que você precisa saber antes de sentar na cadeira MyStyle.
+              Everything you need to know before you sit in the MyStyle chair.
             </p>
           </Reveal>
 
@@ -30,13 +30,13 @@ export default function FaqPage() {
 
           <Reveal>
             <p className="mt-10 text-muted">
-              Não encontrou sua resposta?{" "}
-              <Link href="/contato" className="text-copper underline-offset-2 hover:underline">
-                Fale conosco
+              Still need answers?{" "}
+              <Link href="/contact" className="text-copper underline-offset-2 hover:underline">
+                Contact us
               </Link>{" "}
-              ou{" "}
-              <Link href="/agendar" className="text-copper underline-offset-2 hover:underline">
-                agende um horário
+              or{" "}
+              <Link href="/book" className="text-copper underline-offset-2 hover:underline">
+                book an appointment
               </Link>
               .
             </p>

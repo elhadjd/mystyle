@@ -18,36 +18,40 @@ const syne = Syne({
 
 export const metadata: Metadata = {
   title: {
-    default: "MyStyle — Tranças Africanas & Salão de Beleza",
+    default: "MyStyle — African Braids & Beauty Salon",
     template: "%s · MyStyle",
   },
   description:
-    "Salão MyStyle especializado em tranças africanas, box braids, knotless, fulani, cuidados capilares e beleza para mulheres negras e loiras.",
+    "MyStyle salon specializing in African braids, box braids, knotless, Fulani styles, hair care, and beauty for Black and blonde clients in Atlanta, GA.",
   keywords: [
-    "tranças africanas",
+    "African braids",
     "box braids",
     "knotless braids",
-    "salão de beleza",
+    "beauty salon",
     "MyStyle",
-    "cabelo afro",
-    "tranças loiras",
+    "Atlanta braids",
+    "blonde braids",
   ],
   openGraph: {
-    title: "MyStyle — Tranças Africanas & Salão de Beleza",
+    title: "MyStyle — African Braids & Beauty Salon",
     description:
-      "Tranças africanas, cuidados capilares e beleza com identidade. Agende no MyStyle.",
-    locale: "pt_BR",
+      "African braids, hair care, and beauty with identity. Book at MyStyle in Atlanta.",
+    locale: "en_US",
     type: "website",
   },
   icons: {
-    icon: "/logo/mystyle-mark.png",
-    apple: "/logo/mystyle-mark.png",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/logo/mystyle-favicon.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: "/apple-icon.png",
   },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="pt-BR" className={`${figtree.variable} ${syne.variable} h-full`}>
+    <html lang="en" className={`${figtree.variable} ${syne.variable} h-full`}>
       <body className="min-h-full flex flex-col antialiased">
         <Header />
         <main className="flex-1">{children}</main>

@@ -5,23 +5,23 @@ import Image from "next/image";
 import { gallery } from "@/lib/data";
 
 const filters = [
-  { id: "todas", label: "Todas" },
-  { id: "negra", label: "Negras" },
-  { id: "loira", label: "Loiras" },
-  { id: "mista", label: "Mistas" },
+  { id: "all", label: "All" },
+  { id: "black", label: "Black" },
+  { id: "blonde", label: "Blonde" },
+  { id: "mixed", label: "Mixed" },
 ] as const;
 
 export function GalleryGrid() {
-  const [filter, setFilter] = useState<(typeof filters)[number]["id"]>("todas");
+  const [filter, setFilter] = useState<(typeof filters)[number]["id"]>("all");
 
   const items = useMemo(() => {
-    if (filter === "todas") return gallery;
+    if (filter === "all") return gallery;
     return gallery.filter((item) => item.tone === filter);
   }, [filter]);
 
   return (
     <div>
-      <div className="mb-8 flex flex-wrap gap-2" role="tablist" aria-label="Filtros da galeria">
+      <div className="mb-8 flex flex-wrap gap-2" role="tablist" aria-label="Gallery filters">
         {filters.map((f) => (
           <button
             key={f.id}

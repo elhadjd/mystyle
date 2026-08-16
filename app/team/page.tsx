@@ -5,24 +5,24 @@ import { Reveal } from "@/components/Reveal";
 import { stylists } from "@/lib/data";
 
 export const metadata: Metadata = {
-  title: "Equipe",
+  title: "Team",
   description:
-    "Conheça as profissionais do MyStyle — especialistas em tranças africanas, coloração e cuidados capilares.",
+    "Meet the MyStyle artists — specialists in African braids, color, and hair care in Atlanta.",
 };
 
-export default function EquipePage() {
+export default function TeamPage() {
   return (
     <div className="pt-24">
       <section className="section-pad">
         <div className="container-page mb-12 max-w-3xl">
           <Reveal>
-            <p className="eyebrow">Quem faz a magia</p>
+            <p className="eyebrow">Who makes the magic</p>
             <h1 className="font-display mt-3 text-5xl font-bold tracking-tight sm:text-6xl">
-              Equipe MyStyle
+              MyStyle Team
             </h1>
             <p className="mt-5 text-lg leading-relaxed text-muted">
-              Profissionais apaixonadas por tranças, texturas e o poder de um
-              visual que eleva a autoestima.
+              Artists who love braids, textures, and the power of a look that
+              lifts confidence.
             </p>
           </Reveal>
         </div>
@@ -46,7 +46,7 @@ export default function EquipePage() {
                 <h2 className="font-display mt-2 text-2xl font-bold">{stylist.name}</h2>
                 <p className="mt-3 text-muted leading-relaxed">{stylist.bio}</p>
                 <p className="mt-4 text-sm text-cocoa/70">
-                  Experiência: {stylist.experience}
+                  Experience: {stylist.experience}
                 </p>
                 <ul className="mt-3 flex flex-wrap gap-2">
                   {stylist.specialties.map((s) => (
@@ -64,8 +64,8 @@ export default function EquipePage() {
         </div>
 
         <div className="container-page mt-14 text-center">
-          <Link href="/agendar" className="btn btn-primary">
-            Escolher profissional no agendamento
+          <Link href="/book" className="btn btn-primary">
+            Choose a stylist when you book
           </Link>
         </div>
       </section>

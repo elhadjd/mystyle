@@ -4,37 +4,37 @@ import Link from "next/link";
 import { Reveal } from "@/components/Reveal";
 
 export const metadata: Metadata = {
-  title: "Sobre",
+  title: "About",
   description:
-    "Conheça a história do salão MyStyle — tranças africanas, acolhimento e excelência técnica em São Paulo.",
+    "The story of MyStyle salon — African braids, hospitality, and technical excellence in Atlanta, GA.",
 };
 
-export default function SobrePage() {
+export default function AboutPage() {
   return (
     <div className="pt-24">
       <section className="section-pad pb-10">
         <div className="container-page grid items-center gap-12 lg:grid-cols-2">
           <Reveal>
-            <p className="eyebrow">Nossa história</p>
+            <p className="eyebrow">Our story</p>
             <h1 className="font-display mt-3 text-5xl font-bold tracking-tight sm:text-6xl">
-              MyStyle nasceu para celebrar você
+              MyStyle was built to celebrate you
             </h1>
             <p className="mt-6 text-lg leading-relaxed text-muted">
-              Somos um salão especializado em tranças africanas e cuidados
-              capilares. Aqui, a beleza negra é centro — e mulheres loiras
-              também encontram técnicas protetoras com acabamento de alto nível.
+              We’re a salon specializing in African braids and hair care. Black
+              beauty is at the center — and blonde clients also get protective
+              techniques with a high-end finish.
             </p>
             <p className="mt-4 text-lg leading-relaxed text-muted">
-              Fundado por Amara Santos, o MyStyle une tradição, técnica moderna
-              e um espaço onde cada cliente é ouvida antes de qualquer fio ser
-              trançado.
+              Founded by Amara Santos, MyStyle blends tradition, modern
+              technique, and a space where every client is heard before a single
+              strand is braided.
             </p>
           </Reveal>
           <Reveal delay={1}>
             <div className="relative aspect-[4/5] overflow-hidden">
               <Image
                 src="/images/salon-interior.jpg"
-                alt="Ambiente acolhedor do salão MyStyle"
+                alt="Welcoming MyStyle salon interior"
                 fill
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 className="object-cover"
@@ -49,16 +49,16 @@ export default function SobrePage() {
         <div className="container-page grid gap-10 md:grid-cols-3">
           {[
             {
-              title: "Proteção primeiro",
-              text: "Cada técnica é escolhida para respeitar o couro cabeludo e a saúde da fibra.",
+              title: "Protection first",
+              text: "Every technique is chosen to respect the scalp and keep the hair fiber healthy.",
             },
             {
-              title: "Identidade em cada detalhe",
-              text: "Beads, desenhos, cores e texturas que contam a sua história — sem fórmulas prontas.",
+              title: "Identity in every detail",
+              text: "Beads, patterns, colors, and textures that tell your story — never one-size-fits-all.",
             },
             {
-              title: "Experiência completa",
-              text: "Tranças, hidratação, coloração, corte e estética em um só endereço.",
+              title: "Full experience",
+              text: "Braids, conditioning, color, cuts, and beauty services under one roof in Atlanta.",
             },
           ].map((item, i) => (
             <Reveal key={item.title} delay={(i + 1) as 1 | 2 | 3}>
@@ -73,18 +73,18 @@ export default function SobrePage() {
         <div className="container-page max-w-3xl text-center">
           <Reveal>
             <h2 className="font-display text-4xl font-bold tracking-tight">
-              Venha viver a experiência MyStyle
+              Come experience MyStyle
             </h2>
             <p className="mt-4 text-muted">
-              Agende uma visita, tire dúvidas com a equipe e descubra o estilo
-              protetor ideal para o seu momento.
+              Book a visit, ask the team your questions, and find the protective
+              style that fits this season of your life.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
-              <Link href="/agendar" className="btn btn-primary">
-                Agendar
+              <Link href="/book" className="btn btn-primary">
+                Book
               </Link>
-              <Link href="/equipe" className="btn btn-secondary">
-                Conhecer a equipe
+              <Link href="/team" className="btn btn-secondary">
+                Meet the team
               </Link>
             </div>
           </Reveal>

@@ -21,27 +21,27 @@ export function BookingForm() {
       <div className="grid gap-5 sm:grid-cols-2">
         <div>
           <label className="field-label" htmlFor="name">
-            Nome completo
+            Full name
           </label>
           <input
             id="name"
             name="name"
             required
             className="field"
-            placeholder="Seu nome"
+            placeholder="Your name"
             autoComplete="name"
           />
         </div>
         <div>
           <label className="field-label" htmlFor="phone">
-            WhatsApp
+            Phone / Text
           </label>
           <input
             id="phone"
             name="phone"
             required
             className="field"
-            placeholder="(11) 99999-9999"
+            placeholder="(404) 555-0123"
             autoComplete="tel"
           />
         </div>
@@ -50,7 +50,7 @@ export function BookingForm() {
       <div className="grid gap-5 sm:grid-cols-2">
         <div>
           <label className="field-label" htmlFor="email">
-            E-mail
+            Email
           </label>
           <input
             id="email"
@@ -58,17 +58,17 @@ export function BookingForm() {
             type="email"
             required
             className="field"
-            placeholder="voce@email.com"
+            placeholder="you@email.com"
             autoComplete="email"
           />
         </div>
         <div>
           <label className="field-label" htmlFor="service">
-            Serviço
+            Service
           </label>
           <select id="service" name="service" required className="field" defaultValue="">
             <option value="" disabled>
-              Selecione
+              Select
             </option>
             {services.map((s) => (
               <option key={s.id} value={s.name}>
@@ -82,10 +82,10 @@ export function BookingForm() {
       <div className="grid gap-5 sm:grid-cols-3">
         <div>
           <label className="field-label" htmlFor="stylist">
-            Profissional
+            Stylist
           </label>
-          <select id="stylist" name="stylist" className="field" defaultValue="qualquer">
-            <option value="qualquer">Sem preferência</option>
+          <select id="stylist" name="stylist" className="field" defaultValue="any">
+            <option value="any">No preference</option>
             {stylists.map((s) => (
               <option key={s.id} value={s.name}>
                 {s.name}
@@ -95,7 +95,7 @@ export function BookingForm() {
         </div>
         <div>
           <label className="field-label" htmlFor="date">
-            Data
+            Date
           </label>
           <input
             id="date"
@@ -108,32 +108,39 @@ export function BookingForm() {
         </div>
         <div>
           <label className="field-label" htmlFor="time">
-            Horário
+            Time
           </label>
           <select id="time" name="time" required className="field" defaultValue="">
             <option value="" disabled>
-              Selecione
+              Select
             </option>
-            {["09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00", "17:00"].map(
-              (t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ),
-            )}
+            {[
+              "9:00 AM",
+              "10:00 AM",
+              "11:00 AM",
+              "1:00 PM",
+              "2:00 PM",
+              "3:00 PM",
+              "4:00 PM",
+              "5:00 PM",
+            ].map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
           </select>
         </div>
       </div>
 
       <div>
         <label className="field-label" htmlFor="notes">
-          Observações
+          Notes
         </label>
         <textarea
           id="notes"
           name="notes"
           className="field"
-          placeholder="Comprimento desejado, cor do cabelo, referência de estilo..."
+          placeholder="Desired length, hair color, style reference..."
         />
       </div>
 
@@ -148,7 +155,7 @@ export function BookingForm() {
       ) : null}
 
       <button type="submit" className="btn btn-primary w-full sm:w-auto" disabled={pending}>
-        {pending ? "Enviando..." : "Confirmar pedido de agendamento"}
+        {pending ? "Sending..." : "Submit booking request"}
       </button>
     </form>
   );

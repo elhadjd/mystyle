@@ -24,16 +24,15 @@ export async function submitBooking(
   if (!name || !phone || !email || !service || !date || !time) {
     return {
       ok: false,
-      message: "Preencha todos os campos obrigatórios para continuar.",
+      message: "Please fill in all required fields to continue.",
     };
   }
 
-  // Simulated booking intake — ready to wire to WhatsApp/CRM/API.
   await new Promise((resolve) => setTimeout(resolve, 600));
 
   return {
     ok: true,
-    message: `Obrigada, ${name}! Recebemos seu pedido para ${service} em ${date} às ${time}. Em breve confirmamos pelo WhatsApp.`,
+    message: `Thanks, ${name}! We received your request for ${service} on ${date} at ${time}. We’ll confirm by text shortly.`,
   };
 }
 
@@ -47,13 +46,13 @@ export async function submitContact(
   const message = String(formData.get("message") || "").trim();
 
   if (!name || !email || !subject || !message) {
-    return { ok: false, message: "Preencha todos os campos para enviar." };
+    return { ok: false, message: "Please complete all fields before sending." };
   }
 
   await new Promise((resolve) => setTimeout(resolve, 500));
 
   return {
     ok: true,
-    message: `Mensagem recebida, ${name}. Retornamos em até 1 dia útil.`,
+    message: `Message received, ${name}. We’ll get back within 1 business day.`,
   };
 }

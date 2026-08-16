@@ -15,21 +15,16 @@ export function Footer() {
             className="mb-4 h-10 w-auto"
           />
           <p className="max-w-sm text-[0.95rem] leading-relaxed text-muted">
-            {brand.tagline}. Um espaço para celebrar tranças africanas, cuidados
-            capilares e a beleza de cada mulher.
+            {brand.tagline}. A space to celebrate African braids, hair care, and
+            the beauty of every woman.
           </p>
-          <a
-            href={`https://wa.me/${brand.whatsapp}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn btn-copper mt-6"
-          >
-            WhatsApp
+          <a href={`tel:${brand.phoneTel}`} className="btn btn-copper mt-6">
+            Call us
           </a>
         </div>
 
         <div>
-          <h2 className="font-display mb-4 text-lg font-semibold">Navegação</h2>
+          <h2 className="font-display mb-4 text-lg font-semibold">Explore</h2>
           <ul className="space-y-2.5">
             {navLinks.map((link) => (
               <li key={link.href}>
@@ -39,15 +34,15 @@ export function Footer() {
               </li>
             ))}
             <li>
-              <Link href="/agendar" className="text-muted transition hover:text-espresso">
-                Agendar
+              <Link href="/book" className="text-muted transition hover:text-espresso">
+                Book
               </Link>
             </li>
           </ul>
         </div>
 
         <div>
-          <h2 className="font-display mb-4 text-lg font-semibold">Visite</h2>
+          <h2 className="font-display mb-4 text-lg font-semibold">Visit</h2>
           <p className="text-muted">{brand.address}</p>
           <p className="mt-3 text-muted">{brand.phone}</p>
           <p className="text-muted">{brand.email}</p>
@@ -64,8 +59,8 @@ export function Footer() {
 
       <div className="border-t border-[var(--line)]">
         <div className="container-page flex flex-col gap-2 py-5 text-sm text-muted sm:flex-row sm:justify-between">
-          <p>© {new Date().getFullYear()} MyStyle. Todos os direitos reservados.</p>
-          <p>Beleza com identidade · São Paulo</p>
+          <p>© {new Date().getFullYear()} MyStyle. All rights reserved.</p>
+          <p>Beauty with identity · {brand.city}</p>
         </div>
       </div>
     </footer>

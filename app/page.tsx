@@ -18,7 +18,7 @@ export default function HomePage() {
         <div className="hero-media absolute inset-0">
           <Image
             src="/images/hero-braids-black.jpg"
-            alt="Mulher negra com tranças africanas no MyStyle"
+            alt="Black woman with African braids at MyStyle"
             fill
             priority
             sizes="100vw"
@@ -31,23 +31,20 @@ export default function HomePage() {
         <div className="ambient-orb pointer-events-none absolute -left-20 top-32 h-64 w-64 rounded-full bg-copper/20 blur-3xl" />
 
         <div className="container-page relative z-10 flex min-h-[100svh] flex-col justify-end pb-16 pt-28 sm:justify-center sm:pb-24">
-          <p className="animate-rise eyebrow text-copper-soft">Salão MyStyle</p>
+          <p className="animate-rise eyebrow text-copper-soft">MyStyle Salon</p>
           <h1 className="animate-rise-delay font-display mt-4 max-w-3xl text-[clamp(3.2rem,9vw,6.5rem)] font-bold leading-[0.92] tracking-tight text-cream">
             MyStyle
           </h1>
           <p className="animate-rise-delay-2 mt-5 max-w-md text-lg leading-relaxed text-cream/85 sm:text-xl">
-            Tranças africanas e beleza com identidade — para mulheres negras,
-            loiras e todos os tons de poder.
+            African braids and beauty with identity — for Black women, blondes,
+            and every shade of power.
           </p>
           <div className="animate-rise-delay-2 mt-8 flex flex-wrap gap-3">
-            <Link href="/agendar" className="btn btn-copper">
-              Agendar horário
+            <Link href="/book" className="btn btn-copper">
+              Book now
             </Link>
-            <Link
-              href="/galeria"
-              className="btn btn-ghost-light"
-            >
-              Ver galeria
+            <Link href="/gallery" className="btn btn-ghost-light">
+              View gallery
             </Link>
           </div>
         </div>
@@ -56,16 +53,16 @@ export default function HomePage() {
       <section className="section-pad">
         <div className="container-page grid items-end gap-8 md:grid-cols-[1.2fr_1fr]">
           <Reveal>
-            <p className="eyebrow">O que fazemos</p>
+            <p className="eyebrow">What we do</p>
             <h2 className="font-display mt-3 max-w-xl text-4xl font-bold tracking-tight text-espresso sm:text-5xl">
-              Tranças que protegem. Estilo que celebra.
+              Braids that protect. Style that celebrates.
             </h2>
           </Reveal>
           <Reveal delay={1}>
             <p className="text-[1.05rem] leading-relaxed text-muted">
-              Do box braid clássico às goddess loiras, cada serviço é pensado
-              para conforto, durabilidade e expressão. Cuidados capilares,
-              coloração e estética no mesmo espaço.
+              From classic box braids to blonde goddess looks, every service is
+              built for comfort, longevity, and self-expression. Hair care,
+              color, and beauty — all in one Atlanta studio.
             </p>
           </Reveal>
         </div>
@@ -75,7 +72,7 @@ export default function HomePage() {
             <Reveal key={service.id} delay={(i + 1) as 1 | 2 | 3}>
               <article className="border-t border-espresso/15 pt-6">
                 <p className="text-sm font-semibold uppercase tracking-[0.14em] text-copper">
-                  a partir de {formatPrice(service.priceFrom)}
+                  from {formatPrice(service.priceFrom)}
                 </p>
                 <h3 className="font-display mt-3 text-2xl font-semibold">{service.name}</h3>
                 <p className="mt-3 text-muted leading-relaxed">{service.description}</p>
@@ -86,8 +83,8 @@ export default function HomePage() {
         </div>
 
         <div className="container-page mt-10">
-          <Link href="/servicos" className="btn btn-secondary">
-            Ver todos os serviços
+          <Link href="/services" className="btn btn-secondary">
+            See all services
           </Link>
         </div>
       </section>
@@ -97,7 +94,7 @@ export default function HomePage() {
           <div className="relative min-h-[70vh]">
             <Image
               src="/images/hero-braids-blonde.jpg"
-              alt="Cliente loira com knotless braids africanas"
+              alt="Blonde client with African knotless braids"
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"
               className="object-cover"
@@ -105,17 +102,17 @@ export default function HomePage() {
           </div>
           <div className="flex flex-col justify-center bg-espresso px-8 py-16 text-cream sm:px-14">
             <Reveal>
-              <p className="eyebrow text-copper-soft">Para todas</p>
+              <p className="eyebrow text-copper-soft">For everyone</p>
               <h2 className="font-display mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
-                Negras e loiras. Tranças com a mesma excelência.
+                Black & blonde. Braids with the same excellence.
               </h2>
               <p className="mt-5 max-w-md text-cream/75 leading-relaxed">
-                Técnicas protetoras, acabamento impecável e acolhimento real.
-                Seja box, knotless, fulani ou passion twists — o seu estilo
-                encontra o seu lugar aqui.
+                Protective techniques, polished finishes, and real hospitality.
+                Whether box, knotless, Fulani, or passion twists — your style
+                belongs here.
               </p>
-              <Link href="/sobre" className="btn btn-copper mt-8 w-fit">
-                Conhecer a MyStyle
+              <Link href="/about" className="btn btn-copper mt-8 w-fit">
+                About MyStyle
               </Link>
             </Reveal>
           </div>
@@ -125,21 +122,21 @@ export default function HomePage() {
       <section className="section-pad">
         <div className="container-page mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <Reveal>
-            <p className="eyebrow">Portfólio</p>
+            <p className="eyebrow">Portfolio</p>
             <h2 className="font-display mt-2 text-4xl font-bold tracking-tight">
-              Galeria ao vivo
+              Live gallery
             </h2>
           </Reveal>
           <Reveal delay={1}>
-            <Link href="/galeria" className="btn btn-secondary">
-              Abrir galeria
+            <Link href="/gallery" className="btn btn-secondary">
+              Open gallery
             </Link>
           </Reveal>
         </div>
         <div className="container-page grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {gallery.slice(0, 4).map((item, i) => (
             <Reveal key={item.id} delay={(Math.min(i, 2) + 1) as 1 | 2 | 3}>
-              <Link href="/galeria" className="group relative block aspect-[3/4] overflow-hidden">
+              <Link href="/gallery" className="group relative block aspect-[3/4] overflow-hidden">
                 <Image
                   src={item.src}
                   alt={item.alt}
@@ -159,9 +156,9 @@ export default function HomePage() {
       <section className="border-y border-[var(--line)] bg-[rgba(243,221,212,0.45)] section-pad">
         <div className="container-page">
           <Reveal>
-            <p className="eyebrow">Depoimentos</p>
+            <p className="eyebrow">Testimonials</p>
             <h2 className="font-display mt-2 mb-10 text-4xl font-bold tracking-tight">
-              Elas recomendam
+              Clients recommend
             </h2>
           </Reveal>
           <div className="grid gap-10 md:grid-cols-3">
@@ -185,7 +182,7 @@ export default function HomePage() {
           <div className="absolute inset-0">
             <Image
               src="/images/salon-interior.jpg"
-              alt="Interior do salão MyStyle"
+              alt="MyStyle salon interior"
               fill
               sizes="100vw"
               className="object-cover"
@@ -195,22 +192,20 @@ export default function HomePage() {
           <div className="relative z-10 px-6 py-20 text-center sm:px-12">
             <Reveal>
               <p className="font-display text-4xl font-bold text-cream sm:text-5xl">
-                Pronta para o seu próximo visual?
+                Ready for your next look?
               </p>
               <p className="mx-auto mt-4 max-w-lg text-cream/80">
-                Agende online ou fale conosco no WhatsApp. {brand.address}.
+                Book online or call us. {brand.address}.
               </p>
               <div className="mt-8 flex flex-wrap justify-center gap-3">
-                <Link href="/agendar" className="btn btn-copper">
-                  Agendar agora
+                <Link href="/book" className="btn btn-copper">
+                  Book now
                 </Link>
                 <a
-                  href={`https://wa.me/${brand.whatsapp}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn border border-cream/40 text-cream hover:bg-cream hover:text-espresso"
+                  href={`tel:${brand.phoneTel}`}
+                  className="btn btn-ghost-light"
                 >
-                  WhatsApp
+                  Call {brand.phone}
                 </a>
               </div>
             </Reveal>

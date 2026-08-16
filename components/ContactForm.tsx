@@ -13,13 +13,13 @@ export function ContactForm() {
       <div className="grid gap-5 sm:grid-cols-2">
         <div>
           <label className="field-label" htmlFor="contact-name">
-            Nome
+            Name
           </label>
           <input id="contact-name" name="name" required className="field" autoComplete="name" />
         </div>
         <div>
           <label className="field-label" htmlFor="contact-email">
-            E-mail
+            Email
           </label>
           <input
             id="contact-email"
@@ -33,13 +33,13 @@ export function ContactForm() {
       </div>
       <div>
         <label className="field-label" htmlFor="contact-subject">
-          Assunto
+          Subject
         </label>
         <input id="contact-subject" name="subject" required className="field" />
       </div>
       <div>
         <label className="field-label" htmlFor="contact-message">
-          Mensagem
+          Message
         </label>
         <textarea id="contact-message" name="message" required className="field" />
       </div>
@@ -49,7 +49,7 @@ export function ContactForm() {
         </p>
       ) : null}
       <button type="submit" className="btn btn-primary" disabled={pending}>
-        {pending ? "Enviando..." : "Enviar mensagem"}
+        {pending ? "Sending..." : "Send message"}
       </button>
     </form>
   );

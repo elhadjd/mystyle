@@ -34,7 +34,7 @@ export function Header() {
           href="/"
           onClick={closeMenu}
           className="relative z-10 flex items-center gap-2.5"
-          aria-label="MyStyle início"
+          aria-label="MyStyle home"
         >
           <Image
             src="/logo/mystyle.svg"
@@ -46,7 +46,7 @@ export function Header() {
           />
         </Link>
 
-        <nav className="hidden items-center gap-7 lg:flex" aria-label="Principal">
+        <nav className="hidden items-center gap-7 lg:flex" aria-label="Main">
           {navLinks.map((link) => {
             const active = pathname === link.href;
             return (
@@ -71,13 +71,13 @@ export function Header() {
 
         <div className="hidden items-center gap-3 lg:flex">
           <a
-            href={`tel:${brand.phone.replace(/\D/g, "")}`}
+            href={`tel:${brand.phoneTel}`}
             className={`text-sm ${lightNav ? "text-cream/75" : "text-muted"}`}
           >
             {brand.phone}
           </a>
-          <Link href="/agendar" className={lightNav ? "btn btn-copper" : "btn btn-primary"}>
-            Agendar
+          <Link href="/book" className={lightNav ? "btn btn-copper" : "btn btn-primary"}>
+            Book
           </Link>
         </div>
 
@@ -86,7 +86,7 @@ export function Header() {
           className="relative z-10 flex h-11 w-11 flex-col items-center justify-center gap-1.5 lg:hidden"
           aria-expanded={open}
           aria-controls="mobile-menu"
-          aria-label={open ? "Fechar menu" : "Abrir menu"}
+          aria-label={open ? "Close menu" : "Open menu"}
           onClick={() => setOpen((v) => !v)}
         >
           <span
@@ -124,8 +124,8 @@ export function Header() {
               {link.label}
             </Link>
           ))}
-          <Link href="/agendar" onClick={closeMenu} className="btn btn-primary mt-2 w-full">
-            Agendar horário
+          <Link href="/book" onClick={closeMenu} className="btn btn-primary mt-2 w-full">
+            Book an appointment
           </Link>
         </nav>
       </div>

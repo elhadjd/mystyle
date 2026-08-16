@@ -1,17 +1,17 @@
-# MyStyle — Salão de Beleza
+# MyStyle — Beauty Salon
 
-Site completo do salão **MyStyle**, especializado em tranças africanas e serviços de cabelo.
+Complete website for **MyStyle**, an African braids & beauty salon in Atlanta, GA.
 
-## Páginas
+## Pages
 
-- `/` — Home com hero, serviços em destaque, galeria e depoimentos
-- `/servicos` — Menu completo com preços
-- `/galeria` — Portfólio com filtros (negras / loiras / mistas)
-- `/sobre` — História e valores
-- `/equipe` — Profissionais
-- `/agendar` — Formulário de agendamento
-- `/contato` — Contato + formulário
-- `/faq` — Perguntas frequentes
+- `/` — Home with hero, featured services, gallery, testimonials
+- `/services` — Full menu with USD pricing
+- `/gallery` — Portfolio with filters (Black / Blonde / Mixed)
+- `/about` — Story and values
+- `/team` — Stylists
+- `/book` — Booking form
+- `/contact` — Contact + form
+- `/faq` — Frequently asked questions
 
 ## Stack
 
@@ -20,14 +20,14 @@ Site completo do salão **MyStyle**, especializado em tranças africanas e servi
 - Tailwind CSS 4
 - TypeScript
 
-## Desenvolvimento
+## Development
 
 ```bash
 npm install
 npm run dev
 ```
 
-Abra [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000).
 
 ## Build
 
