@@ -1,69 +1,222 @@
 import Image from "next/image";
+import Link from "next/link";
+import { Reveal } from "@/components/Reveal";
+import {
+  brand,
+  formatPrice,
+  gallery,
+  services,
+  testimonials,
+} from "@/lib/data";
 
-export default function Home() {
+export default function HomePage() {
+  const featured = services.filter((s) => s.popular).slice(0, 3);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
+    <>
+      <section className="relative min-h-[100svh] overflow-hidden">
+        <div className="hero-media absolute inset-0">
+          <Image
+            src="/images/hero-braids-black.jpg"
+            alt="Mulher negra com tranças africanas no MyStyle"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover object-[center_20%]"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-[rgba(28,16,12,0.78)] via-[rgba(28,16,12,0.45)] to-[rgba(28,16,12,0.15)]" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[rgba(28,16,12,0.55)] via-transparent to-[rgba(28,16,12,0.25)]" />
+        </div>
+
+        <div className="ambient-orb pointer-events-none absolute -left-20 top-32 h-64 w-64 rounded-full bg-copper/20 blur-3xl" />
+
+        <div className="container-page relative z-10 flex min-h-[100svh] flex-col justify-end pb-16 pt-28 sm:justify-center sm:pb-24">
+          <p className="animate-rise eyebrow text-copper-soft">Salão MyStyle</p>
+          <h1 className="animate-rise-delay font-display mt-4 max-w-3xl text-[clamp(3.2rem,9vw,6.5rem)] font-bold leading-[0.92] tracking-tight text-cream">
+            MyStyle
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="animate-rise-delay-2 mt-5 max-w-md text-lg leading-relaxed text-cream/85 sm:text-xl">
+            Tranças africanas e beleza com identidade — para mulheres negras,
+            loiras e todos os tons de poder.
           </p>
+          <div className="animate-rise-delay-2 mt-8 flex flex-wrap gap-3">
+            <Link href="/agendar" className="btn btn-copper">
+              Agendar horário
+            </Link>
+            <Link
+              href="/galeria"
+              className="btn btn-ghost-light"
+            >
+              Ver galeria
+            </Link>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+      </section>
+
+      <section className="section-pad">
+        <div className="container-page grid items-end gap-8 md:grid-cols-[1.2fr_1fr]">
+          <Reveal>
+            <p className="eyebrow">O que fazemos</p>
+            <h2 className="font-display mt-3 max-w-xl text-4xl font-bold tracking-tight text-espresso sm:text-5xl">
+              Tranças que protegem. Estilo que celebra.
+            </h2>
+          </Reveal>
+          <Reveal delay={1}>
+            <p className="text-[1.05rem] leading-relaxed text-muted">
+              Do box braid clássico às goddess loiras, cada serviço é pensado
+              para conforto, durabilidade e expressão. Cuidados capilares,
+              coloração e estética no mesmo espaço.
+            </p>
+          </Reveal>
+        </div>
+
+        <div className="container-page mt-12 grid gap-8 md:grid-cols-3">
+          {featured.map((service, i) => (
+            <Reveal key={service.id} delay={(i + 1) as 1 | 2 | 3}>
+              <article className="border-t border-espresso/15 pt-6">
+                <p className="text-sm font-semibold uppercase tracking-[0.14em] text-copper">
+                  a partir de {formatPrice(service.priceFrom)}
+                </p>
+                <h3 className="font-display mt-3 text-2xl font-semibold">{service.name}</h3>
+                <p className="mt-3 text-muted leading-relaxed">{service.description}</p>
+                <p className="mt-4 text-sm text-cocoa/70">{service.duration}</p>
+              </article>
+            </Reveal>
+          ))}
+        </div>
+
+        <div className="container-page mt-10">
+          <Link href="/servicos" className="btn btn-secondary">
+            Ver todos os serviços
+          </Link>
+        </div>
+      </section>
+
+      <section className="relative overflow-hidden">
+        <div className="grid lg:grid-cols-2">
+          <div className="relative min-h-[70vh]">
             <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
+              src="/images/hero-braids-blonde.jpg"
+              alt="Cliente loira com knotless braids africanas"
+              fill
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              className="object-cover"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          </div>
+          <div className="flex flex-col justify-center bg-espresso px-8 py-16 text-cream sm:px-14">
+            <Reveal>
+              <p className="eyebrow text-copper-soft">Para todas</p>
+              <h2 className="font-display mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
+                Negras e loiras. Tranças com a mesma excelência.
+              </h2>
+              <p className="mt-5 max-w-md text-cream/75 leading-relaxed">
+                Técnicas protetoras, acabamento impecável e acolhimento real.
+                Seja box, knotless, fulani ou passion twists — o seu estilo
+                encontra o seu lugar aqui.
+              </p>
+              <Link href="/sobre" className="btn btn-copper mt-8 w-fit">
+                Conhecer a MyStyle
+              </Link>
+            </Reveal>
+          </div>
         </div>
-      </main>
-    </div>
+      </section>
+
+      <section className="section-pad">
+        <div className="container-page mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <Reveal>
+            <p className="eyebrow">Portfólio</p>
+            <h2 className="font-display mt-2 text-4xl font-bold tracking-tight">
+              Galeria ao vivo
+            </h2>
+          </Reveal>
+          <Reveal delay={1}>
+            <Link href="/galeria" className="btn btn-secondary">
+              Abrir galeria
+            </Link>
+          </Reveal>
+        </div>
+        <div className="container-page grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {gallery.slice(0, 4).map((item, i) => (
+            <Reveal key={item.id} delay={(Math.min(i, 2) + 1) as 1 | 2 | 3}>
+              <Link href="/galeria" className="group relative block aspect-[3/4] overflow-hidden">
+                <Image
+                  src={item.src}
+                  alt={item.alt}
+                  fill
+                  sizes="(max-width: 768px) 50vw, 25vw"
+                  className="object-cover transition duration-700 group-hover:scale-105"
+                />
+                <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-espresso/70 to-transparent p-4 text-sm font-medium text-cream">
+                  {item.style}
+                </span>
+              </Link>
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      <section className="border-y border-[var(--line)] bg-[rgba(243,221,212,0.45)] section-pad">
+        <div className="container-page">
+          <Reveal>
+            <p className="eyebrow">Depoimentos</p>
+            <h2 className="font-display mt-2 mb-10 text-4xl font-bold tracking-tight">
+              Elas recomendam
+            </h2>
+          </Reveal>
+          <div className="grid gap-10 md:grid-cols-3">
+            {testimonials.map((t, i) => (
+              <Reveal key={t.id} delay={(i + 1) as 1 | 2 | 3}>
+                <blockquote>
+                  <p className="text-lg leading-relaxed text-cocoa">&ldquo;{t.text}&rdquo;</p>
+                  <footer className="mt-5">
+                    <cite className="not-italic font-semibold text-espresso">{t.name}</cite>
+                    <p className="text-sm text-muted">{t.service}</p>
+                  </footer>
+                </blockquote>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="section-pad">
+        <div className="container-page relative overflow-hidden">
+          <div className="absolute inset-0">
+            <Image
+              src="/images/salon-interior.jpg"
+              alt="Interior do salão MyStyle"
+              fill
+              sizes="100vw"
+              className="object-cover"
+            />
+            <div className="absolute inset-0 bg-espresso/70" />
+          </div>
+          <div className="relative z-10 px-6 py-20 text-center sm:px-12">
+            <Reveal>
+              <p className="font-display text-4xl font-bold text-cream sm:text-5xl">
+                Pronta para o seu próximo visual?
+              </p>
+              <p className="mx-auto mt-4 max-w-lg text-cream/80">
+                Agende online ou fale conosco no WhatsApp. {brand.address}.
+              </p>
+              <div className="mt-8 flex flex-wrap justify-center gap-3">
+                <Link href="/agendar" className="btn btn-copper">
+                  Agendar agora
+                </Link>
+                <a
+                  href={`https://wa.me/${brand.whatsapp}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn border border-cream/40 text-cream hover:bg-cream hover:text-espresso"
+                >
+                  WhatsApp
+                </a>
+              </div>
+            </Reveal>
+          </div>
+        </div>
+      </section>
+    </>
   );
 }
