@@ -1,28 +1,47 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Reveal } from "@/components/Reveal";
+import { brand, testimonials } from "@/lib/data";
 import {
-  brand,
-  formatPrice,
-  gallery,
-  services,
-  testimonials,
-} from "@/lib/data";
+  getHomeGalleryPreview,
+  getHomeHeroMedia,
+  getServiceMenu,
+} from "@/lib/site-content";
 
-export default function HomePage() {
-  const featured = services.filter((s) => s.popular).slice(0, 3);
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  const [hero, preview, menu] = await Promise.all([
+    getHomeHeroMedia(),
+    getHomeGalleryPreview(4),
+    getServiceMenu(),
+  ]);
+
+  const featured = menu.groups
+    .flatMap((group) => group.items)
+    .filter((item) => item.highlighted || item.badge)
+    .slice(0, 3);
+
+  const featuredFallback = menu.groups.flatMap((group) => group.items).slice(0, 3);
+  const cards = featured.length > 0 ? featured : featuredFallback;
+
+  const heroSrc = hero?.media_url || "/images/hero-braids-black.jpg";
+  const heroAlt = hero?.title || hero?.description || "Black woman with African braids at MyStyle";
+  const heroCtaLabel = hero?.button_label || null;
+  const heroCtaUrl = hero?.button_url || null;
 
   return (
     <>
       <section className="relative min-h-[100svh] overflow-hidden">
         <div className="hero-media absolute inset-0">
           <Image
-            src="/images/hero-braids-black.jpg"
-            alt="Black woman with African braids at MyStyle"
+            src={heroSrc}
+            alt={heroAlt}
             fill
             priority
             sizes="100vw"
             className="object-cover object-[center_20%]"
+            unoptimized={heroSrc.startsWith("http")}
           />
           <div className="absolute inset-0 bg-gradient-to-r from-[rgba(28,16,12,0.78)] via-[rgba(28,16,12,0.45)] to-[rgba(28,16,12,0.15)]" />
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(28,16,12,0.55)] via-transparent to-[rgba(28,16,12,0.25)]" />
@@ -36,13 +55,19 @@ export default function HomePage() {
             MyStyle
           </h1>
           <p className="animate-rise-delay-2 mt-5 max-w-md text-lg leading-relaxed text-cream/85 sm:text-xl">
-            African braids and beauty with identity — for Black women, blondes,
-            and every shade of power.
+            {hero?.description?.trim() ||
+              "African braids and beauty with identity — for Black women, blondes, and every shade of power."}
           </p>
           <div className="animate-rise-delay-2 mt-8 flex flex-wrap gap-3">
-            <Link href="/book" className="btn btn-copper">
-              Book now
-            </Link>
+            {heroCtaUrl && heroCtaLabel ? (
+              <a href={heroCtaUrl} className="btn btn-copper">
+                {heroCtaLabel}
+              </a>
+            ) : (
+              <Link href="/book" className="btn btn-copper">
+                Book now
+              </Link>
+            )}
             <Link href="/gallery" className="btn btn-ghost-light">
               View gallery
             </Link>
@@ -68,15 +93,16 @@ export default function HomePage() {
         </div>
 
         <div className="container-page mt-12 grid gap-8 md:grid-cols-3">
-          {featured.map((service, i) => (
+          {cards.map((service, i) => (
             <Reveal key={service.id} delay={(i + 1) as 1 | 2 | 3}>
               <article className="border-t border-espresso/15 pt-6">
                 <p className="text-sm font-semibold uppercase tracking-[0.14em] text-copper">
-                  from {formatPrice(service.priceFrom)}
+                  {service.priceLabel}
                 </p>
-                <h3 className="font-display mt-3 text-2xl font-semibold">{service.name}</h3>
-                <p className="mt-3 text-muted leading-relaxed">{service.description}</p>
-                <p className="mt-4 text-sm text-cocoa/70">{service.duration}</p>
+                <h3 className="font-display mt-3 text-2xl font-semibold">{service.title}</h3>
+                {service.description ? (
+                  <p className="mt-3 text-muted leading-relaxed">{service.description}</p>
+                ) : null}
               </article>
             </Reveal>
           ))}
@@ -134,7 +160,7 @@ export default function HomePage() {
           </Reveal>
         </div>
         <div className="container-page grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {gallery.slice(0, 4).map((item, i) => (
+          {preview.map((item, i) => (
             <Reveal key={item.id} delay={(Math.min(i, 2) + 1) as 1 | 2 | 3}>
               <Link href="/gallery" className="group relative block aspect-[3/4] overflow-hidden">
                 <Image
@@ -143,9 +169,10 @@ export default function HomePage() {
                   fill
                   sizes="(max-width: 768px) 50vw, 25vw"
                   className="object-cover transition duration-700 group-hover:scale-105"
+                  unoptimized={item.src.startsWith("http")}
                 />
                 <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-espresso/70 to-transparent p-4 text-sm font-medium text-cream">
-                  {item.style}
+                  {item.title}
                 </span>
               </Link>
             </Reveal>
@@ -201,10 +228,7 @@ export default function HomePage() {
                 <Link href="/book" className="btn btn-copper">
                   Book now
                 </Link>
-                <a
-                  href={`tel:${brand.phoneTel}`}
-                  className="btn btn-ghost-light"
-                >
+                <a href={`tel:${brand.phoneTel}`} className="btn btn-ghost-light">
                   Call {brand.phone}
                 </a>
               </div>

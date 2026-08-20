@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { GalleryGrid } from "@/components/GalleryGrid";
 import { Reveal } from "@/components/Reveal";
+import { getGalleryItems } from "@/lib/site-content";
 
 export const metadata: Metadata = {
   title: "Gallery",
@@ -8,7 +9,11 @@ export const metadata: Metadata = {
     "MyStyle portfolio: Black and blonde women with African braids, box braids, Fulani, goddess, and more.",
 };
 
-export default function GalleryPage() {
+export const dynamic = "force-dynamic";
+
+export default async function GalleryPage() {
+  const { items, filters } = await getGalleryItems();
+
   return (
     <div className="pt-24">
       <section className="section-pad">
@@ -25,7 +30,7 @@ export default function GalleryPage() {
           </Reveal>
         </div>
         <div className="container-page">
-          <GalleryGrid />
+          <GalleryGrid items={items} filters={filters} />
         </div>
       </section>
     </div>

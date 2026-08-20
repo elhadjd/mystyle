@@ -1,11 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Reveal } from "@/components/Reveal";
-import {
-  formatPrice,
-  serviceCategories,
-  services,
-} from "@/lib/data";
+import { getServiceMenu } from "@/lib/site-content";
 
 export const metadata: Metadata = {
   title: "Services & Pricing",
@@ -13,7 +9,11 @@ export const metadata: Metadata = {
     "Full menu of African braids, hair care, beauty, and extras at MyStyle in Atlanta.",
 };
 
-export default function ServicesPage() {
+export const dynamic = "force-dynamic";
+
+export default async function ServicesPage() {
+  const { groups } = await getServiceMenu();
+
   return (
     <div className="pt-24">
       <section className="section-pad pb-8">
@@ -31,49 +31,48 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {serviceCategories.map((category) => {
-        const items = services.filter((s) => s.category === category.id);
-        return (
-          <section key={category.id} className="pb-16">
-            <div className="container-page">
-              <Reveal>
-                <h2 className="font-display mb-8 border-b border-[var(--line)] pb-4 text-3xl font-bold">
-                  {category.label}
-                </h2>
-              </Reveal>
-              <div className="grid gap-0">
-                {items.map((service, i) => (
-                  <Reveal key={service.id} delay={((i % 3) + 1) as 1 | 2 | 3}>
-                    <article className="grid gap-3 border-b border-[var(--line)] py-6 sm:grid-cols-[1.4fr_auto] sm:items-start">
-                      <div>
-                        <div className="flex flex-wrap items-center gap-3">
-                          <h3 className="font-display text-xl font-semibold">
-                            {service.name}
-                          </h3>
-                          {service.popular ? (
-                            <span className="text-xs font-semibold uppercase tracking-wider text-copper">
-                              Popular
-                            </span>
-                          ) : null}
-                        </div>
-                        <p className="mt-2 max-w-2xl text-muted leading-relaxed">
-                          {service.description}
-                        </p>
-                        <p className="mt-2 text-sm text-cocoa/70">
-                          Duration: {service.duration}
-                        </p>
+      {groups.map((group) => (
+        <section key={group.id} className="pb-16">
+          <div className="container-page">
+            <Reveal>
+              <h2 className="font-display mb-2 border-b border-[var(--line)] pb-4 text-3xl font-bold">
+                {group.title}
+              </h2>
+              {group.description ? (
+                <p className="mt-3 mb-6 max-w-2xl text-muted">{group.description}</p>
+              ) : (
+                <div className="mb-6" />
+              )}
+            </Reveal>
+            <div className="grid gap-0">
+              {group.items.map((item, i) => (
+                <Reveal key={item.id} delay={((i % 3) + 1) as 1 | 2 | 3}>
+                  <article className="grid gap-3 border-b border-[var(--line)] py-6 sm:grid-cols-[1.4fr_auto] sm:items-start">
+                    <div>
+                      <div className="flex flex-wrap items-center gap-3">
+                        <h3 className="font-display text-xl font-semibold">{item.title}</h3>
+                        {item.badge ? (
+                          <span className="text-xs font-semibold uppercase tracking-wider text-copper">
+                            {item.badge}
+                          </span>
+                        ) : null}
                       </div>
-                      <p className="text-lg font-semibold text-espresso sm:text-right">
-                        from {formatPrice(service.priceFrom)}
-                      </p>
-                    </article>
-                  </Reveal>
-                ))}
-              </div>
+                      {item.description ? (
+                        <p className="mt-2 max-w-2xl text-muted leading-relaxed">
+                          {item.description}
+                        </p>
+                      ) : null}
+                    </div>
+                    <p className="text-lg font-semibold text-espresso sm:text-right">
+                      {item.priceLabel}
+                    </p>
+                  </article>
+                </Reveal>
+              ))}
             </div>
-          </section>
-        );
-      })}
+          </div>
+        </section>
+      ))}
 
       <section className="section-pad pt-0">
         <div className="container-page flex flex-col items-start gap-4 border border-[var(--line)] bg-[rgba(243,221,212,0.4)] px-6 py-10 sm:flex-row sm:items-center sm:justify-between sm:px-10">
