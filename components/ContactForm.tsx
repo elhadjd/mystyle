@@ -1,12 +1,35 @@
 "use client";
 
-import { useActionState } from "react";
-import { submitContact, type ContactState } from "@/lib/actions";
+import { useActionState, useState } from "react";
+import { submitContact, type ContactFormValues, type ContactState } from "@/lib/actions";
 
-const initialState: ContactState = { ok: false, message: "" };
+const emptyValues: ContactFormValues = {
+  name: "",
+  email: "",
+  phone: "",
+  subject: "",
+  message: "",
+};
+
+const initialState: ContactState = {
+  ok: false,
+  message: "",
+  values: emptyValues,
+};
 
 export function ContactForm() {
   const [state, formAction, pending] = useActionState(submitContact, initialState);
+  const [values, setValues] = useState<ContactFormValues>(initialState.values);
+  const [prevState, setPrevState] = useState(state);
+
+  if (state !== prevState) {
+    setPrevState(state);
+    setValues(state.values);
+  }
+
+  function updateField(field: keyof ContactFormValues, value: string) {
+    setValues((prev) => ({ ...prev, [field]: value }));
+  }
 
   return (
     <form action={formAction} className="grid gap-5">
@@ -22,6 +45,8 @@ export function ContactForm() {
             className="field"
             autoComplete="name"
             maxLength={120}
+            value={values.name}
+            onChange={(e) => updateField("name", e.target.value)}
           />
         </div>
         <div>
@@ -36,6 +61,8 @@ export function ContactForm() {
             className="field"
             autoComplete="email"
             maxLength={190}
+            value={values.email}
+            onChange={(e) => updateField("email", e.target.value)}
           />
         </div>
       </div>
@@ -52,19 +79,35 @@ export function ContactForm() {
           autoComplete="tel"
           maxLength={20}
           placeholder="(404) 555-0123"
+          value={values.phone}
+          onChange={(e) => updateField("phone", e.target.value)}
         />
       </div>
       <div>
         <label className="field-label" htmlFor="contact-subject">
           Subject
         </label>
-        <input id="contact-subject" name="subject" className="field" maxLength={190} />
+        <input
+          id="contact-subject"
+          name="subject"
+          className="field"
+          maxLength={190}
+          value={values.subject}
+          onChange={(e) => updateField("subject", e.target.value)}
+        />
       </div>
       <div>
         <label className="field-label" htmlFor="contact-message">
           Message
         </label>
-        <textarea id="contact-message" name="message" className="field" maxLength={5000} />
+        <textarea
+          id="contact-message"
+          name="message"
+          className="field"
+          maxLength={5000}
+          value={values.message}
+          onChange={(e) => updateField("message", e.target.value)}
+        />
       </div>
       {state.message ? (
         <p className={`text-sm ${state.ok ? "text-sage" : "text-copper"}`} role="status">

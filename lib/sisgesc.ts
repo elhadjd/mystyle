@@ -2,6 +2,10 @@ const CONTACT_PATH = "/api/site/contacts/submit";
 const PHONE_MAX_LENGTH = 20;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+/** Shown to visitors — never expose config, API keys, or server details. */
+export const CONTACT_CLIENT_ERROR =
+  "We couldn't send your message right now. Please try again in a few minutes.";
+
 export type SiteContactPayload = {
   name: string;
   email: string;
@@ -52,20 +56,12 @@ function getSiteApiConfig() {
 
   if (!host || !key) {
     console.error("[SISGESC] Missing SITE_API_HOST or SITE_API_KEY.");
-    return {
-      ok: false as const,
-      message:
-        process.env.NODE_ENV === "production"
-          ? "Could not send your message. Please try again."
-          : "Contact service is not configured. Set SITE_API_HOST and SITE_API_KEY in .env.",
-    };
+    return { ok: false as const };
   }
 
   if (!/^https?:\/\//i.test(host)) {
-    return {
-      ok: false as const,
-      message: "SITE_API_HOST must be a full URL, for example https://app.example.com",
-    };
+    console.error("[SISGESC] SITE_API_HOST must be a full URL (https://...).");
+    return { ok: false as const };
   }
 
   return { ok: true as const, host, key };
@@ -161,7 +157,7 @@ export async function submitSiteContact(
 ): Promise<SiteContactResult> {
   const config = getSiteApiConfig();
   if (!config.ok) {
-    return { ok: false, message: config.message };
+    return { ok: false, message: CONTACT_CLIENT_ERROR };
   }
 
   const url = new URL(CONTACT_PATH, `${config.host}/`);
@@ -179,11 +175,9 @@ export async function submitSiteContact(
       body: JSON.stringify(payload),
       cache: "no-store",
     });
-  } catch {
-    return {
-      ok: false,
-      message: "Could not reach the contact service. Please try again.",
-    };
+  } catch (error) {
+    console.error("[SISGESC] Contact submit network error:", error);
+    return { ok: false, message: CONTACT_CLIENT_ERROR };
   }
 
   const data = await readJson(response);
@@ -199,14 +193,7 @@ export async function submitSiteContact(
 
   if (response.status === 403) {
     console.error("[SISGESC] Contact submit unauthorized (HTTP 403). Check SITE_API_KEY.");
-    return {
-      ok: false,
-      status: 403,
-      message:
-        process.env.NODE_ENV === "production"
-          ? "Could not send your message. Please try again."
-          : "Unauthorized. Check SITE_API_KEY in .env.",
-    };
+    return { ok: false, status: 403, message: CONTACT_CLIENT_ERROR };
   }
 
   if (response.status === 422) {
@@ -218,24 +205,10 @@ export async function submitSiteContact(
   }
 
   if (response.status >= 500) {
-    const serverMessage =
-      data &&
-      typeof data === "object" &&
-      "message" in data &&
-      typeof data.message === "string"
-        ? data.message
-        : "Could not process your message. Please try again.";
-
-    return {
-      ok: false,
-      status: response.status,
-      message: serverMessage,
-    };
+    console.error("[SISGESC] Contact submit server error:", response.status, data);
+    return { ok: false, status: response.status, message: CONTACT_CLIENT_ERROR };
   }
 
-  return {
-    ok: false,
-    status: response.status,
-    message: "Could not send your message. Please try again.",
-  };
+  console.error("[SISGESC] Contact submit unexpected response:", response.status, data);
+  return { ok: false, status: response.status, message: CONTACT_CLIENT_ERROR };
 }

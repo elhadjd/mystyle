@@ -8,10 +8,37 @@ export type BookingState = {
   message: string;
 };
 
+export type ContactFormValues = {
+  name: string;
+  email: string;
+  phone: string;
+  subject: string;
+  message: string;
+};
+
 export type ContactState = {
   ok: boolean;
   message: string;
+  values: ContactFormValues;
 };
+
+const emptyContactValues: ContactFormValues = {
+  name: "",
+  email: "",
+  phone: "",
+  subject: "",
+  message: "",
+};
+
+function readContactValues(formData: FormData): ContactFormValues {
+  return {
+    name: String(formData.get("name") || "").trim(),
+    email: String(formData.get("email") || "").trim(),
+    phone: String(formData.get("phone") || "").trim(),
+    subject: String(formData.get("subject") || "").trim(),
+    message: String(formData.get("message") || "").trim(),
+  };
+}
 
 export async function submitBooking(
   _prev: BookingState,
@@ -51,27 +78,26 @@ export async function submitContact(
   _prev: ContactState,
   formData: FormData,
 ): Promise<ContactState> {
+  const values = readContactValues(formData);
+
   const validated = validateContactInput({
-    name: String(formData.get("name") || ""),
-    email: String(formData.get("email") || ""),
-    phone: String(formData.get("phone") || ""),
-    subject: String(formData.get("subject") || ""),
-    message: String(formData.get("message") || ""),
+    ...values,
     page_url: (await contactPageUrl()) || undefined,
   });
 
   if (!validated.ok) {
-    return { ok: false, message: validated.message };
+    return { ok: false, message: validated.message, values };
   }
 
   const result = await submitSiteContact(validated.payload);
 
   if (!result.ok) {
-    return { ok: false, message: result.message };
+    return { ok: false, message: result.message, values };
   }
 
   return {
     ok: true,
     message: `Thanks, ${validated.payload.name}. ${result.message}`,
+    values: emptyContactValues,
   };
 }
