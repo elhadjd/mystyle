@@ -3,13 +3,19 @@ const MEDIA_PATH = "/api/site/media";
 const PRICE_LISTS_PATH = "/api/site/price-lists";
 const PRICE_QUOTE_PATH = "/api/site/price-lists/quote";
 const CATALOG_PRICE_LISTS_PATH = "/api/site/catalog-price-lists";
+const APPOINTMENTS_SUBMIT_PATH = "/api/site/appointments/submit";
+const APPOINTMENTS_CONFIRM_PATH = "/api/site/appointments/confirm-payment";
 
 const PHONE_MAX_LENGTH = 20;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const TIME_PATTERN = /^([01]\d|2[0-3]):([0-5]\d)(?::([0-5]\d))?$/;
 
 /** Shown to visitors — never expose config, API keys, or server details. */
 export const CONTACT_CLIENT_ERROR =
   "We couldn't send your message right now. Please try again in a few minutes.";
+
+export const APPOINTMENT_CLIENT_ERROR =
+  "We couldn't complete your booking right now. Please try again in a few minutes.";
 
 type SiteApiConfig = { host: string; key: string };
 
@@ -530,4 +536,351 @@ export async function fetchCatalogPriceLists(): Promise<CatalogPriceListGroup[]>
 
 export function isSiteApiConfigured() {
   return getSiteApiConfig().ok;
+}
+
+// ── Appointments ──────────────────────────────────────────────────────────
+
+export type SiteAppointmentPayload = {
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  date: string;
+  time: string;
+  service?: number | string;
+  notes?: string;
+  metadata?: Record<string, unknown>;
+  department_id?: number;
+  amount?: number;
+  success_url?: string;
+  cancel_url?: string;
+};
+
+export type SiteAppointmentRecord = {
+  id: number;
+  date: string;
+  time: string;
+  status: string;
+  metadata: Record<string, unknown> | null;
+};
+
+export type SiteAppointmentPayment = {
+  required?: boolean;
+  status: string;
+  amount?: number;
+  currency?: string;
+  payment_url?: string;
+  session_id?: string;
+  payment_id?: number;
+  code?: string;
+  message?: string;
+  detail?: string;
+};
+
+export type SiteAppointmentResult =
+  | {
+      ok: true;
+      message: string;
+      appointment: SiteAppointmentRecord;
+      payment?: SiteAppointmentPayment | null;
+      paymentUrl?: string;
+    }
+  | { ok: false; message: string; status?: number };
+
+function normalizeTime(value: string) {
+  const trimmed = value.trim();
+  if (TIME_PATTERN.test(trimmed)) {
+    const [h, m] = trimmed.split(":");
+    return `${h.padStart(2, "0")}:${m.padStart(2, "0")}`;
+  }
+
+  const match = trimmed.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (!match) return null;
+
+  let hour = Number(match[1]);
+  const minute = match[2];
+  const period = match[3].toUpperCase();
+
+  if (hour < 1 || hour > 12) return null;
+  if (period === "AM") {
+    if (hour === 12) hour = 0;
+  } else if (hour !== 12) {
+    hour += 12;
+  }
+
+  return `${String(hour).padStart(2, "0")}:${minute}`;
+}
+
+export function validateAppointmentInput(input: {
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  date: string;
+  time: string;
+  service?: string;
+  notes?: string;
+  stylist?: string;
+  department_id?: string;
+  amount?: number;
+  success_url?: string;
+  cancel_url?: string;
+}): { ok: true; payload: SiteAppointmentPayload } | { ok: false; message: string } {
+  const first_name = input.first_name.trim();
+  const last_name = input.last_name.trim();
+  const email = input.email.trim();
+  const phone = input.phone.trim();
+  const date = input.date.trim();
+  const time = normalizeTime(input.time);
+
+  if (!first_name || !last_name || !email || !phone || !date || !input.time.trim()) {
+    return {
+      ok: false,
+      message: "Please fill in all required booking fields.",
+    };
+  }
+
+  if (!EMAIL_PATTERN.test(email)) {
+    return { ok: false, message: "Please enter a valid email address." };
+  }
+
+  if (phone.length > PHONE_MAX_LENGTH) {
+    return {
+      ok: false,
+      message: `Phone must be ${PHONE_MAX_LENGTH} characters or fewer.`,
+    };
+  }
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return { ok: false, message: "Please choose a valid date." };
+  }
+
+  if (!time) {
+    return { ok: false, message: "Please choose a valid time." };
+  }
+
+  const payload: SiteAppointmentPayload = {
+    first_name,
+    last_name,
+    email,
+    phone,
+    date,
+    time,
+  };
+
+  const service = optionalText(input.service);
+  const notes = optionalText(input.notes);
+  const stylist = optionalText(input.stylist);
+  const departmentRaw = optionalText(input.department_id);
+
+  if (service) {
+    payload.service = /^\d+$/.test(service) ? Number(service) : service;
+  }
+  if (notes) {
+    if (notes.length > 2000) {
+      return { ok: false, message: "Notes must be 2000 characters or fewer." };
+    }
+    payload.notes = notes;
+  }
+
+  payload.metadata = {
+    form: "booking",
+  };
+  if (stylist && stylist !== "any") {
+    payload.metadata.stylist = stylist;
+  }
+
+  if (departmentRaw) {
+    if (!/^\d+$/.test(departmentRaw)) {
+      return { ok: false, message: "Invalid department." };
+    }
+    payload.department_id = Number(departmentRaw);
+  }
+
+  if (typeof input.amount === "number" && input.amount >= 0.01) {
+    const successUrl = optionalText(input.success_url);
+    const cancelUrl = optionalText(input.cancel_url);
+    if (!successUrl || !cancelUrl) {
+      return {
+        ok: false,
+        message: APPOINTMENT_CLIENT_ERROR,
+      };
+    }
+    payload.amount = input.amount;
+    payload.success_url = successUrl;
+    payload.cancel_url = cancelUrl;
+  }
+
+  return { ok: true, payload };
+}
+
+function appointmentValidationMessage(body: ValidationErrorBody | null) {
+  return firstValidationMessage(body);
+}
+
+export async function submitSiteAppointment(
+  payload: SiteAppointmentPayload,
+): Promise<SiteAppointmentResult> {
+  const resolved = getSiteApiConfig();
+  if (!resolved.ok) {
+    return { ok: false, message: APPOINTMENT_CLIENT_ERROR };
+  }
+
+  const { host, key } = resolved.config;
+  const url = new URL(APPOINTMENTS_SUBMIT_PATH, `${host}/`);
+  url.searchParams.set("key", key);
+
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        key,
+      },
+      body: JSON.stringify(payload),
+      cache: "no-store",
+    });
+  } catch (error) {
+    console.error("[SISGESC] Appointment submit network error:", error);
+    return { ok: false, message: APPOINTMENT_CLIENT_ERROR };
+  }
+
+  const data = await readJson(response);
+
+  if (response.status === 201) {
+    const body = data as {
+      success?: boolean;
+      message?: string;
+      appointment?: SiteAppointmentRecord;
+      payment?: SiteAppointmentPayment;
+    } | null;
+
+    if (!body?.appointment?.id) {
+      console.error("[SISGESC] Appointment 201 without appointment payload:", data);
+      return { ok: false, message: APPOINTMENT_CLIENT_ERROR };
+    }
+
+    const paymentUrl =
+      body.payment?.payment_url ||
+      (typeof body.appointment.metadata?.deposit_payment_url === "string"
+        ? body.appointment.metadata.deposit_payment_url
+        : undefined);
+
+    return {
+      ok: true,
+      message:
+        body.message ||
+        "Appointment created successfully.",
+      appointment: body.appointment,
+      payment: body.payment || null,
+      paymentUrl,
+    };
+  }
+
+  if (response.status === 403) {
+    console.error("[SISGESC] Appointment unauthorized (HTTP 403). Check SITE_API_KEY.");
+    return { ok: false, status: 403, message: APPOINTMENT_CLIENT_ERROR };
+  }
+
+  if (response.status === 422) {
+    const body = data as (ValidationErrorBody & { success?: boolean; message?: string }) | null;
+    return {
+      ok: false,
+      status: 422,
+      message: appointmentValidationMessage(body),
+    };
+  }
+
+  console.error("[SISGESC] Appointment submit unexpected response:", response.status, data);
+  return { ok: false, status: response.status, message: APPOINTMENT_CLIENT_ERROR };
+}
+
+export async function confirmSiteAppointmentPayment(input: {
+  appointment_id: number;
+  session_id: string;
+}): Promise<
+  | { ok: true; message: string; appointment: SiteAppointmentRecord; payment?: SiteAppointmentPayment }
+  | { ok: false; message: string; status?: number }
+> {
+  if (!input.appointment_id || !input.session_id.trim()) {
+    return { ok: false, message: "Missing payment confirmation details.", status: 422 };
+  }
+
+  const resolved = getSiteApiConfig();
+  if (!resolved.ok) {
+    return { ok: false, message: APPOINTMENT_CLIENT_ERROR };
+  }
+
+  const { host, key } = resolved.config;
+  const url = new URL(APPOINTMENTS_CONFIRM_PATH, `${host}/`);
+  url.searchParams.set("key", key);
+
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        key,
+      },
+      body: JSON.stringify({
+        appointment_id: input.appointment_id,
+        session_id: input.session_id.trim(),
+      }),
+      cache: "no-store",
+    });
+  } catch (error) {
+    console.error("[SISGESC] Appointment confirm-payment network error:", error);
+    return { ok: false, message: APPOINTMENT_CLIENT_ERROR };
+  }
+
+  const data = await readJson(response);
+
+  if (response.ok) {
+    const body = data as {
+      success?: boolean;
+      message?: string;
+      appointment?: SiteAppointmentRecord;
+      payment?: SiteAppointmentPayment;
+    } | null;
+
+    if (!body?.appointment) {
+      console.error("[SISGESC] confirm-payment OK without appointment:", data);
+      return { ok: false, message: APPOINTMENT_CLIENT_ERROR };
+    }
+
+    return {
+      ok: true,
+      message: body.message || "Appointment deposit payment confirmed.",
+      appointment: body.appointment,
+      payment: body.payment,
+    };
+  }
+
+  if (response.status === 403) {
+    console.error("[SISGESC] confirm-payment unauthorized (HTTP 403).");
+    return { ok: false, status: 403, message: APPOINTMENT_CLIENT_ERROR };
+  }
+
+  if (response.status === 422) {
+    return {
+      ok: false,
+      status: 422,
+      message: appointmentValidationMessage(data as ValidationErrorBody | null),
+    };
+  }
+
+  console.error("[SISGESC] confirm-payment unexpected response:", response.status, data);
+  return { ok: false, status: response.status, message: APPOINTMENT_CLIENT_ERROR };
+}
+
+export function getAppointmentDepositAmount() {
+  const raw = process.env.SITE_APPOINTMENT_DEPOSIT_AMOUNT?.trim();
+  if (!raw) return undefined;
+  const amount = Number(raw);
+  if (!Number.isFinite(amount) || amount < 0.01) return undefined;
+  return amount;
 }

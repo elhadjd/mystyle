@@ -42,10 +42,14 @@ Do **not** prefix these with `NEXT_PUBLIC_`. The key stays on the server.
 | Contact form | `POST /api/site/contacts/submit` |
 | Gallery / home media | `GET /api/site/media` |
 | Services menu (editorial) | `GET /api/site/catalog-price-lists` |
+| Book appointment | `POST /api/site/appointments/submit` |
+| Confirm deposit | `POST /api/site/appointments/confirm-payment` |
 | ERP price lists (available in `lib/sisgesc`) | `GET /api/site/price-lists` |
 | Live product quote (available in `lib/sisgesc`) | `POST /api/site/price-lists/quote` |
 
-If the API is unreachable or empty, the site falls back to local static content.
+Optional deposit: set `SITE_APPOINTMENT_DEPOSIT_AMOUNT` (e.g. `15`). Booking then sends `amount`, `success_url`, and `cancel_url`; if Stripe returns `payment.payment_url`, the visitor is redirected and `/book/payment/success` confirms the deposit.
+
+If the API is unreachable or empty, media/pricing fall back to local static content.
 
 ```bash
 npm install
