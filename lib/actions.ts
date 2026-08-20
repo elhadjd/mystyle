@@ -1,5 +1,8 @@
 "use server";
 
+import { headers } from "next/headers";
+import { submitSiteContact, validateContactInput } from "@/lib/sisgesc";
+
 export type BookingState = {
   ok: boolean;
   message: string;
@@ -36,23 +39,39 @@ export async function submitBooking(
   };
 }
 
+async function contactPageUrl() {
+  const headerList = await headers();
+  const host = headerList.get("x-forwarded-host") || headerList.get("host");
+  const proto = headerList.get("x-forwarded-proto") || "https";
+  if (!host) return undefined;
+  return `${proto}://${host}/contact`;
+}
+
 export async function submitContact(
   _prev: ContactState,
   formData: FormData,
 ): Promise<ContactState> {
-  const name = String(formData.get("name") || "").trim();
-  const email = String(formData.get("email") || "").trim();
-  const subject = String(formData.get("subject") || "").trim();
-  const message = String(formData.get("message") || "").trim();
+  const validated = validateContactInput({
+    name: String(formData.get("name") || ""),
+    email: String(formData.get("email") || ""),
+    phone: String(formData.get("phone") || ""),
+    subject: String(formData.get("subject") || ""),
+    message: String(formData.get("message") || ""),
+    page_url: (await contactPageUrl()) || undefined,
+  });
 
-  if (!name || !email || !subject || !message) {
-    return { ok: false, message: "Please complete all fields before sending." };
+  if (!validated.ok) {
+    return { ok: false, message: validated.message };
   }
 
-  await new Promise((resolve) => setTimeout(resolve, 500));
+  const result = await submitSiteContact(validated.payload);
+
+  if (!result.ok) {
+    return { ok: false, message: result.message };
+  }
 
   return {
     ok: true,
-    message: `Message received, ${name}. We’ll get back within 1 business day.`,
+    message: `Thanks, ${validated.payload.name}. ${result.message}`,
   };
 }

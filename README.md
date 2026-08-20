@@ -20,7 +20,20 @@ Complete website for **MyStyle**, an African braids & beauty salon in Atlanta, G
 - Tailwind CSS 4
 - TypeScript
 
-## Development
+## Environment
+
+Copy `.env.example` to `.env` and add the SISGESC Site API credentials (server-only):
+
+```bash
+cp .env.example .env
+```
+
+```bash
+SITE_API_HOST=https://your-sisgesc-host.example
+SITE_API_KEY=your-site-api-key
+```
+
+Do **not** prefix these with `NEXT_PUBLIC_`. The contact form posts to a Next.js server action, which then calls `POST {SITE_API_HOST}/api/site/contacts/submit` with the `key`.
 
 ```bash
 npm install
