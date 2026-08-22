@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function GalleryPage() {
-  const { items, filters } = await getGalleryItems();
+  const { items, filters, unavailable } = await getGalleryItems();
 
   return (
     <div className="pt-24">
@@ -27,10 +27,19 @@ export default async function GalleryPage() {
               African braids across skin tones and hair colors — from deep black
               to honey blonde. Filter and find your next look.
             </p>
+            {unavailable ? (
+              <p className="mt-4 text-copper">
+                Gallery is temporarily unavailable. Please try again later.
+              </p>
+            ) : null}
           </Reveal>
         </div>
         <div className="container-page">
-          <GalleryGrid items={items} filters={filters} />
+          {items.length > 0 ? (
+            <GalleryGrid items={items} filters={filters} />
+          ) : !unavailable ? (
+            <p className="text-muted">No gallery images have been published yet.</p>
+          ) : null}
         </div>
       </section>
     </div>

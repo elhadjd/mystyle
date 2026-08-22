@@ -1,8 +1,11 @@
 import {
-  fetchCatalogPriceLists,
-  fetchSiteMedia,
+  fetchCatalogPriceListsResult,
+  fetchSiteMediaGroupedResult,
+  fetchSiteMediaResult,
+  isSiteApiConfigured,
   type CatalogPriceListGroup,
   type SiteMediaAsset,
+  type SiteMediaGroup,
 } from "@/lib/sisgesc";
 import { gallery as staticGallery, services as staticServices } from "@/lib/data";
 
@@ -30,6 +33,16 @@ export type ServiceDisplayGroup = {
   }[];
 };
 
+export type BookingServiceOption = {
+  id: string;
+  label: string;
+};
+
+export type ContentLoadState = {
+  source: "api" | "static";
+  unavailable?: boolean;
+};
+
 function mediaToGalleryItem(asset: SiteMediaAsset): GalleryDisplayItem | null {
   if (!asset.media_url) return null;
 
@@ -47,6 +60,10 @@ function mediaToGalleryItem(asset: SiteMediaAsset): GalleryDisplayItem | null {
   };
 }
 
+function flattenGroupedMedia(groups: SiteMediaGroup[]): SiteMediaAsset[] {
+  return groups.flatMap((group) => group.media_assets || []);
+}
+
 function staticGalleryItems(): GalleryDisplayItem[] {
   return staticGallery.map((item) => ({
     id: item.id,
@@ -59,37 +76,78 @@ function staticGalleryItems(): GalleryDisplayItem[] {
   }));
 }
 
+function buildGalleryFilters(items: GalleryDisplayItem[]) {
+  const filterIds = Array.from(new Set(items.map((item) => item.filter)));
+  return [
+    { id: "all", label: "All" },
+    ...filterIds.map((id) => ({
+      id,
+      label: id.charAt(0).toUpperCase() + id.slice(1),
+    })),
+  ];
+}
+
 export async function getGalleryItems(): Promise<{
   items: GalleryDisplayItem[];
   filters: { id: string; label: string }[];
-  source: "api" | "static";
-}> {
-  const [galleryMedia, allImages] = await Promise.all([
-    fetchSiteMedia({ type: "image", placement: "gallery" }),
-    fetchSiteMedia({ type: "image" }),
-  ]);
+} & ContentLoadState> {
+  if (isSiteApiConfigured()) {
+    const [groupedResult, flatResult] = await Promise.all([
+      fetchSiteMediaGroupedResult({ type: "image", placement: "gallery" }),
+      fetchSiteMediaResult({ type: "image", placement: "gallery" }),
+    ]);
 
-  const preferred = galleryMedia.length > 0 ? galleryMedia : allImages;
-  const fromApi = preferred
-    .map(mediaToGalleryItem)
-    .filter((item): item is GalleryDisplayItem => Boolean(item))
-    .sort((a, b) => a.title.localeCompare(b.title));
+    if (!groupedResult.ok && !flatResult.ok) {
+      return {
+        items: [],
+        filters: [{ id: "all", label: "All" }],
+        source: "api",
+        unavailable: true,
+      };
+    }
 
-  if (fromApi.length > 0) {
-    const filterIds = Array.from(new Set(fromApi.map((item) => item.filter)));
-    const filters = [
-      { id: "all", label: "All" },
-      ...filterIds.map((id) => ({
-        id,
-        label: id.charAt(0).toUpperCase() + id.slice(1),
-      })),
-    ];
+    const groupedAssets = groupedResult.ok ? flattenGroupedMedia(groupedResult.data) : [];
+    const flatAssets = flatResult.ok ? flatResult.data : [];
+    const preferred = groupedAssets.length > 0 ? groupedAssets : flatAssets;
 
-    return { items: fromApi, filters, source: "api" };
+    if (preferred.length === 0) {
+      const fallback = await fetchSiteMediaResult({ type: "image" });
+      const allAssets = fallback.ok ? fallback.data : [];
+
+      if (!fallback.ok) {
+        return {
+          items: [],
+          filters: [{ id: "all", label: "All" }],
+          source: "api",
+          unavailable: true,
+        };
+      }
+
+      const fromAll = allAssets
+        .map(mediaToGalleryItem)
+        .filter((item): item is GalleryDisplayItem => Boolean(item));
+
+      return {
+        items: fromAll,
+        filters: buildGalleryFilters(fromAll),
+        source: "api",
+      };
+    }
+
+    const fromApi = preferred
+      .map(mediaToGalleryItem)
+      .filter((item): item is GalleryDisplayItem => Boolean(item));
+
+    return {
+      items: fromApi,
+      filters: buildGalleryFilters(fromApi),
+      source: "api",
+    };
   }
 
+  const items = staticGalleryItems();
   return {
-    items: staticGalleryItems(),
+    items,
     filters: [
       { id: "all", label: "All" },
       { id: "black", label: "Black" },
@@ -101,15 +159,18 @@ export async function getGalleryItems(): Promise<{
 }
 
 export async function getHomeHeroMedia(): Promise<SiteMediaAsset | null> {
-  const featured = await fetchSiteMedia({
+  if (!isSiteApiConfigured()) return null;
+
+  const featured = await fetchSiteMediaResult({
     type: "image",
     placement: "home",
     featured: true,
   });
-  if (featured[0]?.media_url) return featured[0];
+  if (featured.ok && featured.data[0]?.media_url) return featured.data[0];
 
-  const home = await fetchSiteMedia({ type: "image", placement: "home" });
-  return home.find((asset) => asset.media_url) || null;
+  const home = await fetchSiteMediaResult({ type: "image", placement: "home" });
+  if (!home.ok) return null;
+  return home.data.find((asset) => asset.media_url) || null;
 }
 
 export async function getHomeGalleryPreview(limit = 4): Promise<GalleryDisplayItem[]> {
@@ -182,16 +243,31 @@ function staticServiceGroups(): ServiceDisplayGroup[] {
   }));
 }
 
-export async function getServiceMenu(): Promise<{
-  groups: ServiceDisplayGroup[];
-  source: "api" | "static";
-}> {
-  const catalog = await fetchCatalogPriceLists();
-  const groups = catalogToServiceGroups(catalog).filter((g) => g.items.length > 0);
+export async function getServiceMenu(): Promise<
+  { groups: ServiceDisplayGroup[] } & ContentLoadState
+> {
+  if (isSiteApiConfigured()) {
+    const result = await fetchCatalogPriceListsResult();
 
-  if (groups.length > 0) {
+    if (!result.ok) {
+      return { groups: [], source: "api", unavailable: true };
+    }
+
+    const groups = catalogToServiceGroups(result.data).filter((g) => g.items.length > 0);
     return { groups, source: "api" };
   }
 
   return { groups: staticServiceGroups(), source: "static" };
+}
+
+export async function getBookingServiceOptions(): Promise<BookingServiceOption[]> {
+  const { groups, source, unavailable } = await getServiceMenu();
+  if (source === "api" && unavailable) return [];
+
+  return groups.flatMap((group) =>
+    group.items.map((item) => ({
+      id: item.id,
+      label: item.title,
+    })),
+  );
 }

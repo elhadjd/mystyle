@@ -1,11 +1,12 @@
 import type { NextConfig } from "next";
+import { normalizeSiteApiHost } from "./lib/sisgesc";
 
 function siteApiRemotePatterns() {
-  const host = process.env.SITE_API_HOST?.trim();
-  if (!host) return [];
+  const raw = process.env.SITE_API_HOST?.trim();
+  if (!raw) return [];
 
   try {
-    const url = new URL(host);
+    const url = new URL(normalizeSiteApiHost(raw));
     return [
       {
         protocol: (url.protocol.replace(":", "") || "https") as "http" | "https",

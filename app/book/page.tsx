@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { BookingForm } from "@/components/BookingForm";
 import { Reveal } from "@/components/Reveal";
 import { brand } from "@/lib/data";
+import { getBookingServiceOptions } from "@/lib/site-content";
 
 export const metadata: Metadata = {
   title: "Book",
@@ -9,7 +10,11 @@ export const metadata: Metadata = {
     "Book your appointment at MyStyle — African braids, hair care, and beauty in Atlanta, GA.",
 };
 
-export default function BookPage() {
+export const dynamic = "force-dynamic";
+
+export default async function BookPage() {
+  const services = await getBookingServiceOptions();
+
   return (
     <div className="pt-24">
       <section className="section-pad">
@@ -45,7 +50,7 @@ export default function BookPage() {
 
           <Reveal delay={1}>
             <div className="border border-[var(--line)] bg-[rgba(255,248,244,0.65)] p-6 sm:p-8">
-              <BookingForm />
+              <BookingForm services={services} />
             </div>
           </Reveal>
         </div>

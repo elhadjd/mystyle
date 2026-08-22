@@ -1,8 +1,8 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { services, stylists } from "@/lib/data";
 import { submitBooking, type BookingFormValues, type BookingState } from "@/lib/actions";
+import type { BookingServiceOption } from "@/lib/site-content";
 
 const emptyValues: BookingFormValues = {
   first_name: "",
@@ -10,7 +10,6 @@ const emptyValues: BookingFormValues = {
   email: "",
   phone: "",
   service: "",
-  stylist: "any",
   date: "",
   time: "",
   notes: "",
@@ -39,7 +38,11 @@ function getMinDate() {
   return tomorrow.toISOString().slice(0, 10);
 }
 
-export function BookingForm() {
+type BookingFormProps = {
+  services: BookingServiceOption[];
+};
+
+export function BookingForm({ services }: BookingFormProps) {
   const [state, formAction, pending] = useActionState(submitBooking, initialState);
   const [values, setValues] = useState<BookingFormValues>(initialState.values);
   const [prevState, setPrevState] = useState(state);
@@ -125,48 +128,32 @@ export function BookingForm() {
         </div>
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2">
-        <div>
-          <label className="field-label" htmlFor="service">
-            Service
-          </label>
-          <select
-            id="service"
-            name="service"
-            required
-            className="field"
-            value={values.service}
-            onChange={(e) => updateField("service", e.target.value)}
-          >
-            <option value="" disabled>
-              Select
+      <div>
+        <label className="field-label" htmlFor="service">
+          Service
+        </label>
+        <select
+          id="service"
+          name="service"
+          required
+          className="field"
+          value={values.service}
+          onChange={(e) => updateField("service", e.target.value)}
+        >
+          <option value="" disabled>
+            Select
+          </option>
+          {services.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.label}
             </option>
-            {services.map((s) => (
-              <option key={s.id} value={s.name}>
-                {s.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="field-label" htmlFor="stylist">
-            Stylist
-          </label>
-          <select
-            id="stylist"
-            name="stylist"
-            className="field"
-            value={values.stylist}
-            onChange={(e) => updateField("stylist", e.target.value)}
-          >
-            <option value="any">No preference</option>
-            {stylists.map((s) => (
-              <option key={s.id} value={s.name}>
-                {s.name}
-              </option>
-            ))}
-          </select>
-        </div>
+          ))}
+        </select>
+        {services.length === 0 ? (
+          <p className="mt-2 text-sm text-copper">
+            Services are temporarily unavailable. Please call us to book.
+          </p>
+        ) : null}
       </div>
 
       <div className="grid gap-5 sm:grid-cols-2">
@@ -234,7 +221,11 @@ export function BookingForm() {
         </p>
       ) : null}
 
-      <button type="submit" className="btn btn-primary w-full sm:w-auto" disabled={pending}>
+      <button
+        type="submit"
+        className="btn btn-primary w-full sm:w-auto"
+        disabled={pending || services.length === 0}
+      >
         {pending ? "Booking..." : "Book appointment"}
       </button>
     </form>

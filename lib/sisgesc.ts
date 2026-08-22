@@ -19,8 +19,16 @@ export const APPOINTMENT_CLIENT_ERROR =
 
 type SiteApiConfig = { host: string; key: string };
 
+/** Origin only — strips trailing `/api/site` if present in env. */
+export function normalizeSiteApiHost(raw: string) {
+  let host = raw.trim().replace(/\/+$/, "");
+  host = host.replace(/\/api\/site$/i, "");
+  return host.replace(/\/+$/, "");
+}
+
 function getSiteApiConfig(): { ok: true; config: SiteApiConfig } | { ok: false } {
-  const host = process.env.SITE_API_HOST?.trim().replace(/\/+$/, "");
+  const rawHost = process.env.SITE_API_HOST?.trim();
+  const host = rawHost ? normalizeSiteApiHost(rawHost) : "";
   const key = process.env.SITE_API_KEY?.trim();
 
   if (!host || !key) {
@@ -335,9 +343,17 @@ export type MediaQuery = {
   group_id?: number;
 };
 
-export async function fetchSiteMedia(
+export type SiteFetchResult<T> = { ok: true; data: T } | { ok: false; status?: number };
+
+function activeMediaAssets(assets: SiteMediaAsset[]) {
+  return assets.filter(
+    (asset) => asset.is_active !== false && Boolean(asset.media_url),
+  );
+}
+
+export async function fetchSiteMediaResult(
   query: MediaQuery = {},
-): Promise<SiteMediaAsset[]> {
+): Promise<SiteFetchResult<SiteMediaAsset[]>> {
   const result = await siteApiFetch(MEDIA_PATH, {
     query: {
       grouped: query.grouped ? 1 : undefined,
@@ -348,15 +364,23 @@ export async function fetchSiteMedia(
     },
   });
 
-  if (!result.ok) return [];
-  return asArray<SiteMediaAsset>(result.data).filter(
-    (asset) => asset.is_active !== false && Boolean(asset.media_url),
-  );
+  if (!result.ok) return { ok: false, status: result.status };
+  return {
+    ok: true,
+    data: activeMediaAssets(asArray<SiteMediaAsset>(result.data)),
+  };
 }
 
-export async function fetchSiteMediaGrouped(
+export async function fetchSiteMedia(
+  query: MediaQuery = {},
+): Promise<SiteMediaAsset[]> {
+  const result = await fetchSiteMediaResult(query);
+  return result.ok ? result.data : [];
+}
+
+export async function fetchSiteMediaGroupedResult(
   query: Omit<MediaQuery, "grouped"> = {},
-): Promise<SiteMediaGroup[]> {
+): Promise<SiteFetchResult<SiteMediaGroup[]>> {
   const result = await siteApiFetch(MEDIA_PATH, {
     query: {
       grouped: 1,
@@ -367,15 +391,24 @@ export async function fetchSiteMediaGrouped(
     },
   });
 
-  if (!result.ok) return [];
-  return asArray<SiteMediaGroup>(result.data)
-    .filter((group) => group.is_active !== false)
-    .map((group) => ({
-      ...group,
-      media_assets: (group.media_assets || []).filter(
-        (asset) => asset.is_active !== false && Boolean(asset.media_url),
-      ),
-    }));
+  if (!result.ok) return { ok: false, status: result.status };
+
+  return {
+    ok: true,
+    data: asArray<SiteMediaGroup>(result.data)
+      .filter((group) => group.is_active !== false)
+      .map((group) => ({
+        ...group,
+        media_assets: activeMediaAssets(group.media_assets || []),
+      })),
+  };
+}
+
+export async function fetchSiteMediaGrouped(
+  query: Omit<MediaQuery, "grouped"> = {},
+): Promise<SiteMediaGroup[]> {
+  const result = await fetchSiteMediaGroupedResult(query);
+  return result.ok ? result.data : [];
 }
 
 // ── ERP price lists ───────────────────────────────────────────────────────
@@ -518,12 +551,8 @@ export type CatalogPriceListGroup = {
   items: CatalogPriceListItem[];
 };
 
-export async function fetchCatalogPriceLists(): Promise<CatalogPriceListGroup[]> {
-  const result = await siteApiFetch(CATALOG_PRICE_LISTS_PATH);
-
-  if (!result.ok) return [];
-
-  return asArray<CatalogPriceListGroup>(result.data)
+function mapCatalogPriceLists(data: unknown): CatalogPriceListGroup[] {
+  return asArray<CatalogPriceListGroup>(data)
     .filter((group) => group.is_active !== false)
     .map((group) => ({
       ...group,
@@ -532,6 +561,19 @@ export async function fetchCatalogPriceLists(): Promise<CatalogPriceListGroup[]>
         .sort((a, b) => a.sort_order - b.sort_order),
     }))
     .sort((a, b) => a.sort_order - b.sort_order);
+}
+
+export async function fetchCatalogPriceListsResult(): Promise<
+  SiteFetchResult<CatalogPriceListGroup[]>
+> {
+  const result = await siteApiFetch(CATALOG_PRICE_LISTS_PATH);
+  if (!result.ok) return { ok: false, status: result.status };
+  return { ok: true, data: mapCatalogPriceLists(result.data) };
+}
+
+export async function fetchCatalogPriceLists(): Promise<CatalogPriceListGroup[]> {
+  const result = await fetchCatalogPriceListsResult();
+  return result.ok ? result.data : [];
 }
 
 export function isSiteApiConfigured() {
@@ -620,7 +662,6 @@ export function validateAppointmentInput(input: {
   time: string;
   service?: string;
   notes?: string;
-  stylist?: string;
   department_id?: string;
   amount?: number;
   success_url?: string;
@@ -670,7 +711,6 @@ export function validateAppointmentInput(input: {
 
   const service = optionalText(input.service);
   const notes = optionalText(input.notes);
-  const stylist = optionalText(input.stylist);
   const departmentRaw = optionalText(input.department_id);
 
   if (service) {
@@ -686,9 +726,6 @@ export function validateAppointmentInput(input: {
   payload.metadata = {
     form: "booking",
   };
-  if (stylist && stylist !== "any") {
-    payload.metadata.stylist = stylist;
-  }
 
   if (departmentRaw) {
     if (!/^\d+$/.test(departmentRaw)) {
@@ -730,6 +767,10 @@ export async function submitSiteAppointment(
   const url = new URL(APPOINTMENTS_SUBMIT_PATH, `${host}/`);
   url.searchParams.set("key", key);
 
+  if (process.env.NODE_ENV !== "production") {
+    console.info("[SISGESC] POST appointment:", url.origin + url.pathname);
+  }
+
   let response: Response;
   try {
     response = await fetch(url, {
@@ -757,15 +798,23 @@ export async function submitSiteAppointment(
       payment?: SiteAppointmentPayment;
     } | null;
 
-    if (!body?.appointment?.id) {
+    if (body?.success === false) {
+      console.error("[SISGESC] Appointment 201 with success=false:", data);
+      return { ok: false, message: APPOINTMENT_CLIENT_ERROR };
+    }
+
+    const appointmentId = body?.appointment?.id;
+    if (!appointmentId || appointmentId < 1 || !body?.appointment) {
       console.error("[SISGESC] Appointment 201 without appointment payload:", data);
       return { ok: false, message: APPOINTMENT_CLIENT_ERROR };
     }
 
+    const appointment = body.appointment;
+
     const paymentUrl =
       body.payment?.payment_url ||
-      (typeof body.appointment.metadata?.deposit_payment_url === "string"
-        ? body.appointment.metadata.deposit_payment_url
+      (typeof appointment.metadata?.deposit_payment_url === "string"
+        ? appointment.metadata.deposit_payment_url
         : undefined);
 
     return {
@@ -773,7 +822,7 @@ export async function submitSiteAppointment(
       message:
         body.message ||
         "Appointment created successfully.",
-      appointment: body.appointment,
+      appointment,
       payment: body.payment || null,
       paymentUrl,
     };

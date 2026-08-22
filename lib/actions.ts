@@ -16,7 +16,6 @@ export type BookingFormValues = {
   email: string;
   phone: string;
   service: string;
-  stylist: string;
   date: string;
   time: string;
   notes: string;
@@ -49,7 +48,6 @@ const emptyBookingValues: BookingFormValues = {
   email: "",
   phone: "",
   service: "",
-  stylist: "any",
   date: "",
   time: "",
   notes: "",
@@ -72,7 +70,6 @@ function readBookingValues(formData: FormData): BookingFormValues {
     email: String(formData.get("email") || "").trim(),
     phone: String(formData.get("phone") || "").trim(),
     service: String(formData.get("service") || "").trim(),
-    stylist: String(formData.get("stylist") || "any").trim() || "any",
     date: String(formData.get("date") || "").trim(),
     time: String(formData.get("time") || "").trim(),
     notes: String(formData.get("notes") || "").trim(),

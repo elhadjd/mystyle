@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function ServicesPage() {
-  const { groups } = await getServiceMenu();
+  const { groups, unavailable } = await getServiceMenu();
 
   return (
     <div className="pt-24">
@@ -27,9 +27,22 @@ export default async function ServicesPage() {
               Prices listed are starting points — final cost depends on length,
               volume, technique, and design complexity. Free quotes when you book.
             </p>
+            {unavailable ? (
+              <p className="mt-4 text-copper">
+                Pricing is temporarily unavailable. Please try again later or call us to book.
+              </p>
+            ) : null}
           </Reveal>
         </div>
       </section>
+
+      {groups.length === 0 && !unavailable ? (
+        <section className="pb-16">
+          <div className="container-page">
+            <p className="text-muted">No services have been published yet.</p>
+          </div>
+        </section>
+      ) : null}
 
       {groups.map((group) => (
         <section key={group.id} className="pb-16">
